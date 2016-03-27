@@ -11,7 +11,14 @@ WHERE_REQUIRED = (u"A Message must either be global, or specify a "
                   u"URL prefix it will match.")
 
 
-class MessageQuerySet(models.QuerySet):
+try:
+    QuerySet = models.QuerySet
+except AttributeError:
+    # Older Django versions put QuerySet in models.query.
+    QuerySet = models.query.QuerySet
+
+
+class MessageQuerySet(QuerySet):
     """
     Custom QuerySet implementing an active() method for only
     retrieving active Messages.

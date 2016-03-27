@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
@@ -160,10 +161,10 @@ class ContextProcessorTests(TestCase):
         # Enable the context processor only for this test, since its
         # context variable name conflicts with the one used by the
         # template tag in other tests.
-        with self.modify_settings(
-            TEMPLATE_CONTEXT_PROCESSORS={
-                'append': 'soapbox.context_processors.soapbox_messages',
-                }):
+        original_setting = settings.TEMPLATE_CONTEXT_PROCESSORS
+        try:
+            settings.TEMPLATE_CONTEXT_PROCESSORS += (
+                'soapbox.context_processors.soapbox_messages',)
             r = self.client.get('/foo/bar/baz/')
             self.assertEqual(r.status_code, 200)
             self.assertTrue('soapbox_messages' in r.context)
@@ -173,3 +174,5 @@ class ContextProcessorTests(TestCase):
                 {1, 2, 3, 7},
                 {m.id for m in r.context['soapbox_messages']}
             )
+        finally:
+            settings.TEMPLATE_CONTEXT_PROCESSORS += original_setting
